@@ -2,12 +2,13 @@ from openai import OpenAI
 import os
 from .models import AnalyzeSourceMessage
 from .search import search
+from typing import Union, Optional
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def analyze_messages(chat_id: str, query: str, user_id: str = None, max_messages: int = 100, k: int = 1000) -> tuple[str, int, list[AnalyzeSourceMessage]]:
-    # Search for many messages to filter later
-    messages = search(chat_id, query, k)
+def analyze_messages(chat_id: str, query: str, user_id: str = None, max_messages: int = 100, k: int = 1000, after_timestamp: Optional[Union[str, int]] = None) -> tuple[str, int, list[AnalyzeSourceMessage]]:
+    # Search for many messages to filter later (pass timestamp filter to search)
+    messages = search(chat_id, query, k, after_timestamp)
     
     # Filter by user_id if specified
     if user_id:
@@ -26,7 +27,12 @@ def analyze_messages(chat_id: str, query: str, user_id: str = None, max_messages
         AnalyzeSourceMessage(
             text=msg.text,
             alias=msg.alias,
-            user_id=msg.user_id or msg.username
+            user_id=msg.user_id or msg.username,
+            # New Telegram fields
+            message_id=msg.message_id,
+            message_thread_id=msg.message_thread_id,
+            reply_to_message_id=msg.reply_to_message_id,
+            chat_id=msg.chat_id
         )
         for msg in messages
     ]

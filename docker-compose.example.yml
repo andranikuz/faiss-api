@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   faiss-api:
-    image: faiss-api:latest
+    image: andranikuz/faiss-api:latest
     # Or use pre-built image from registry:
     # image: your-registry/faiss-api:latest
     

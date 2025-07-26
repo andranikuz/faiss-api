@@ -42,9 +42,10 @@ fly deploy
 
 ### 2. Docker Image для других проектов
 
+#### Использование готового образа:
 ```bash
-# Build image
-docker build -t faiss-api:latest .
+# Pull from Docker Hub
+docker pull andranikuz/faiss-api:latest
 
 # Run locally
 docker run -p 8000:8000 \
@@ -52,12 +53,26 @@ docker run -p 8000:8000 \
   -e API_TOKEN="your-token" \
   -e STORAGE_DIR="/app/storage" \
   -v $(pwd)/storage:/app/storage \
-  faiss-api:latest
+  andranikuz/faiss-api:latest
 
 # Or use docker-compose
 cp docker-compose.example.yml docker-compose.yml
 # Edit .env file with your keys
 docker-compose up -d
+```
+
+#### Сборка собственного образа:
+```bash
+# Build and push to Docker Hub
+make login    # Login to Docker Hub
+make push     # Build and push latest
+make release  # Build and push with version tag
+
+# Other commands
+make build    # Build locally only
+make run      # Run locally for testing
+make buildx   # Build for multiple platforms
+make help     # Show all commands
 ```
 
 ### Использование в docker-compose
@@ -83,6 +98,68 @@ services:
 - `POST /search` - Поиск сообщений
 - `POST /analyze` - Поиск + анализ через GPT
 - `POST /ingest_messages` - Загрузка новых сообщений
+
+### Структура сообщения
+
+Поддерживаются следующие поля для отслеживания структуры Telegram-чатов:
+
+```json
+{
+  "id": 1,
+  "username": "andranikuz", 
+  "alias": "Андраник",
+  "text": "Я думаю, что мы делаем классный бот",
+  "timestamp": "2024-07-25T18:32:00Z",
+  "user_id": "u123",
+  "message_id": 456,
+  "message_thread_id": 22,
+  "reply_to_message_id": 455,
+  "chat_id": "chat_123"
+}
+```
+
+**Поля сообщения:**
+- `timestamp` - время создания (ISO8601 UTC). Если не указано - используется текущее время
+- `message_id` - ID сообщения от Telegram API
+- `message_thread_id` - ID треда в супергруппе
+- `reply_to_message_id` - ID сообщения, на которое дан ответ
+- `chat_id` - ID чата/супергруппы/канала
+
+**Форматы timestamp:**
+- ISO8601: `"2024-07-25T18:32:00Z"` (рекомендуется)
+- Unix timestamp: `1721911200`
+- Если не указан - автоматически устанавливается текущее время UTC
+
+### Фильтрация по времени
+
+Можно фильтровать сообщения по времени с помощью параметра `after_timestamp`:
+
+**Поиск сообщений после определенной даты:**
+```json
+POST /search
+{
+  "chat_id": "123",
+  "query": "обсуждение проекта",
+  "k": 10,
+  "after_timestamp": "2024-07-25T00:00:00Z"
+}
+```
+
+**Анализ только недавних сообщений:**
+```json
+POST /analyze
+{
+  "chat_id": "123", 
+  "query": "Как изменилось настроение пользователей?",
+  "user_id": "u123",
+  "max_messages": 50,
+  "after_timestamp": 1721865600
+}
+```
+
+**Поддерживаемые форматы для after_timestamp:**
+- ISO8601: `"2024-07-25T00:00:00Z"`
+- Unix timestamp: `1721865600`
 
 ## Environment Variables
 

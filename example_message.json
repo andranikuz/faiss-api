@@ -1,0 +1,12 @@
+{
+  "id": 1,
+  "username": "andranikuz",
+  "alias": "Андраник",
+  "text": "Я думаю, что мы делаем классный бот",
+  "timestamp": "2024-07-25T18:32:00Z",
+  "user_id": "u123",
+  "message_id": 456,
+  "message_thread_id": 22,
+  "reply_to_message_id": 455,
+  "chat_id": "chat_123"
+}
