@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  faiss-api:
+    image: faiss-api:latest
+    # Or use pre-built image from registry:
+    # image: your-registry/faiss-api:latest
+    
+    ports:
+      - "8000:8000"
+    
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - API_TOKEN=${API_TOKEN}
+    
+    volumes:
+      # Persist data and index
+      - ./data:/app/data
+      - ./index:/app/index
+    
+    restart: unless-stopped
+    
+    # Optional: resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
