@@ -4,12 +4,19 @@ from langchain_openai import OpenAIEmbeddings
 from .models import SearchResult
 from .config import INDEX_DIR
 from .utils import is_timestamp_after
+from .query_enhancer import enhance_search_query, should_enhance_query
 from typing import Union, Optional
 
 # Создаем единственный экземпляр эмбеддингов для переиспользования
 embeddings = OpenAIEmbeddings()
 
-def search(chat_id: str, query: str, k: int = 5, after_timestamp: Optional[Union[str, int]] = None) -> list[SearchResult]:
+def search(chat_id: str, query: str, k: int = 5, after_timestamp: Optional[Union[str, int]] = None, enhance_query: bool = True) -> list[SearchResult]:
+    # Enhance query with GPT if enabled
+    search_query = query
+    if enhance_query:
+        search_query = enhance_search_query(query)
+        print(f"Enhanced query: '{query}' → '{search_query}'")  # Debug log
+    
     db = FAISS.load_local(
 	    os.path.join(INDEX_DIR, chat_id),
 	    embeddings,
@@ -18,7 +25,7 @@ def search(chat_id: str, query: str, k: int = 5, after_timestamp: Optional[Union
     
     # Get more results if we need to filter by timestamp
     search_k = k * 3 if after_timestamp else k
-    results = db.similarity_search(query, k=search_k)
+    results = db.similarity_search(search_query, k=search_k)
     
     search_results = []
     for doc in results:

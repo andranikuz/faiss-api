@@ -6,9 +6,9 @@ from typing import Union, Optional
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def analyze_messages(chat_id: str, query: str, user_id: str = None, max_messages: int = 100, k: int = 1000, after_timestamp: Optional[Union[str, int]] = None) -> tuple[str, int, list[AnalyzeSourceMessage]]:
+def analyze_messages(chat_id: str, query: str, user_id: str = None, max_messages: int = 100, k: int = 1000, after_timestamp: Optional[Union[str, int]] = None, enhance_query: bool = True) -> tuple[str, int, list[AnalyzeSourceMessage]]:
     # Search for many messages to filter later (pass timestamp filter to search)
-    messages = search(chat_id, query, k, after_timestamp)
+    messages = search(chat_id, query, k, after_timestamp, enhance_query)
     
     # Filter by user_id if specified
     if user_id:

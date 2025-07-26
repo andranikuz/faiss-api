@@ -16,7 +16,7 @@ def search_messages(req: SearchRequest, token: str = Depends(verify_token)):
     try:
         if not os.path.exists(os.path.join(INDEX_DIR, req.chat_id)):
             raise HTTPException(status_code=404, detail=f"Index for chat_id {req.chat_id} not found")
-        results = search(req.chat_id, req.query, req.k, req.after_timestamp)
+        results = search(req.chat_id, req.query, req.k, req.after_timestamp, req.enhance_query)
         return SearchResponse(results=results)
     except HTTPException:
         raise
@@ -41,7 +41,8 @@ def analyze(req: AnalyzeRequest, token: str = Depends(verify_token)):
             req.user_id,
             req.max_messages,
             req.k,
-            req.after_timestamp
+            req.after_timestamp,
+            req.enhance_query
         )
         
         return AnalyzeResponse(

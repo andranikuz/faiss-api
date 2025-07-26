@@ -6,6 +6,7 @@ class SearchRequest(BaseModel):
     query: str
     k: int = 5
     after_timestamp: Optional[Union[str, int]] = None  # Filter messages after this timestamp
+    enhance_query: bool = True  # Use GPT to enhance search query
 
 class SearchResult(BaseModel):
     id: int
@@ -30,6 +31,7 @@ class AnalyzeRequest(BaseModel):
     max_messages: int = 100
     k: int = 5
     after_timestamp: Optional[Union[str, int]] = None  # Filter messages after this timestamp
+    enhance_query: bool = True  # Use GPT to enhance search query
 
 class AnalyzeSourceMessage(BaseModel):
     text: str
