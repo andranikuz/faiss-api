@@ -60,12 +60,17 @@ def ingest_messages(req: IngestRequest, token: str = Depends(verify_token)):
         if not req.messages:
             raise HTTPException(status_code=400, detail="Messages field cannot be empty")
         
-        save_messages(req.chat_id, req.messages)
-        ingest_chat(req.chat_id)
+        result = save_messages(req.chat_id, req.messages)
+        
+        # Only reindex if new messages were added
+        if result["added_count"] > 0:
+            ingest_chat(req.chat_id)
         
         return IngestResponse(
             status="ok",
             message_count=len(req.messages),
+            added_count=result["added_count"],
+            skipped_count=result["skipped_count"],
             chat_id=req.chat_id
         )
     except HTTPException:

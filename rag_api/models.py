@@ -66,4 +66,6 @@ class IngestRequest(BaseModel):
 class IngestResponse(BaseModel):
     status: str
     message_count: int
+    added_count: int
+    skipped_count: int
     chat_id: str

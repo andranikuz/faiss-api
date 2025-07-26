@@ -97,7 +97,7 @@ services:
 
 - `POST /search` - Поиск сообщений
 - `POST /analyze` - Поиск + анализ через GPT
-- `POST /ingest_messages` - Загрузка новых сообщений
+- `POST /ingest_messages` - Добавление новых сообщений (избегает дубликатов)
 
 ### Структура сообщения
 

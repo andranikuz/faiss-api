@@ -10,21 +10,65 @@ from typing import List
 # Создаем единственный экземпляр эмбеддингов для переиспользования
 embeddings = OpenAIEmbeddings()
 
-def save_messages(chat_id: str, messages: List[Message]):
+def get_existing_message_ids(chat_id: str) -> set:
+    """Get set of existing message IDs to avoid duplicates"""
+    path = os.path.join(DATA_DIR, f"messages_{chat_id}.jsonl")
+    existing_ids = set()
+    
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        msg = json.loads(line)
+                        # Use message_id if available, otherwise use id
+                        msg_id = msg.get("message_id") or msg.get("id")
+                        if msg_id is not None:
+                            existing_ids.add(str(msg_id))
+                    except json.JSONDecodeError:
+                        continue
+        except IOError:
+            pass
+    
+    return existing_ids
+
+def save_messages(chat_id: str, messages: List[Message]) -> dict:
+    """
+    Append new messages to chat file, avoiding duplicates
+    
+    Returns:
+        dict with added_count and skipped_count
+    """
     from .config import ensure_directories
     ensure_directories()
     
     path = os.path.join(DATA_DIR, f"messages_{chat_id}.jsonl")
+    existing_ids = get_existing_message_ids(chat_id)
     
-    with open(path, "w", encoding="utf-8") as f:
+    added_count = 0
+    skipped_count = 0
+    
+    # Append mode to add only new messages
+    with open(path, "a", encoding="utf-8") as f:
         for msg in messages:
-            # Ensure timestamp is set
             msg_dict = msg.dict()
+            
+            # Check for duplicates using message_id or id
+            msg_id = msg_dict.get("message_id") or msg_dict.get("id")
+            if msg_id is not None and str(msg_id) in existing_ids:
+                skipped_count += 1
+                continue
+            
+            # Ensure timestamp is set
             if not msg_dict.get("timestamp"):
                 msg_dict["timestamp"] = normalize_timestamp(None)
             else:
                 msg_dict["timestamp"] = normalize_timestamp(msg_dict["timestamp"])
+            
             f.write(json.dumps(msg_dict, ensure_ascii=False) + "\n")
+            added_count += 1
+    
+    return {"added_count": added_count, "skipped_count": skipped_count}
 
 def ingest_chat(chat_id: str):
     from .config import ensure_directories
