@@ -12,6 +12,7 @@ class SearchResult(BaseModel):
     alias: str
     text: str
     timestamp: str
+    user_id: str = None  # Optional for backward compatibility
 
 class SearchResponse(BaseModel):
     results: List[SearchResult]
@@ -19,11 +20,19 @@ class SearchResponse(BaseModel):
 class AnalyzeRequest(BaseModel):
     chat_id: str
     query: str
+    user_id: str = None
+    max_messages: int = 100
     k: int = 5
 
+class AnalyzeSourceMessage(BaseModel):
+    text: str
+    alias: str
+    user_id: str
+
 class AnalyzeResponse(BaseModel):
-    gpt_answer: str
-    messages: List[SearchResult]
+    summary: str
+    messages_used: int
+    source_messages: List[AnalyzeSourceMessage]
 
 class Message(BaseModel):
     id: int
@@ -31,6 +40,7 @@ class Message(BaseModel):
     alias: str
     text: str
     timestamp: str
+    user_id: str = None  # Optional for backward compatibility
 
 class IngestRequest(BaseModel):
     chat_id: str

@@ -18,8 +18,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY rag_api/ ./rag_api/
 
-# Create directories for data and index
-RUN mkdir -p data index
+# Create storage directory structure
+RUN mkdir -p /app/storage/data /app/storage/index
+
+# Set environment variable for storage location
+ENV STORAGE_DIR=/app/storage
 
 # Expose port
 EXPOSE 8000

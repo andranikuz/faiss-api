@@ -5,6 +5,7 @@ from .search import search
 from .analyze import analyze_messages
 from .ingest import ingest_chat, save_messages
 from .auth import verify_token
+from .config import INDEX_DIR
 import os
 
 load_dotenv()
@@ -13,7 +14,7 @@ app = FastAPI()
 @app.post("/search", response_model=SearchResponse)
 def search_messages(req: SearchRequest, token: str = Depends(verify_token)):
     try:
-        if not os.path.exists(f"index/{req.chat_id}"):
+        if not os.path.exists(os.path.join(INDEX_DIR, req.chat_id)):
             raise HTTPException(status_code=404, detail=f"Index for chat_id {req.chat_id} not found")
         results = search(req.chat_id, req.query, req.k)
         return SearchResponse(results=results)
@@ -25,10 +26,28 @@ def search_messages(req: SearchRequest, token: str = Depends(verify_token)):
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze(req: AnalyzeRequest, token: str = Depends(verify_token)):
     try:
-        if not os.path.exists(f"index/{req.chat_id}"):
+        # Validate max_messages
+        if req.max_messages > 1000:
+            raise HTTPException(status_code=400, detail="max_messages cannot exceed 1000")
+        if req.max_messages < 1:
+            raise HTTPException(status_code=400, detail="max_messages must be at least 1")
+            
+        if not os.path.exists(os.path.join(INDEX_DIR, req.chat_id)):
             raise HTTPException(status_code=404, detail=f"Index for chat_id {req.chat_id} not found")
-        gpt_answer, messages = analyze_messages(req.chat_id, req.query, req.k)
-        return AnalyzeResponse(gpt_answer=gpt_answer, messages=messages)
+            
+        summary, messages_used, source_messages = analyze_messages(
+            req.chat_id, 
+            req.query, 
+            req.user_id,
+            req.max_messages,
+            req.k
+        )
+        
+        return AnalyzeResponse(
+            summary=summary, 
+            messages_used=messages_used,
+            source_messages=source_messages
+        )
     except HTTPException:
         raise
     except Exception as e:

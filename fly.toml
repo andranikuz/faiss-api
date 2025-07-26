@@ -16,6 +16,7 @@ primary_region = "ams"
 
 [env]
   PORT = "8000"
+  STORAGE_DIR = "/app/storage"
 
 [[vm]]
   cpu_kind = "shared"
@@ -23,9 +24,5 @@ primary_region = "ams"
   memory_mb = 512
 
 [mounts]
-  source = "faiss_data"
-  destination = "/app/data"
-
-[[statics]]
-  guest_path = "/app/index"
-  url_prefix = "/static/"
+  source = "faiss_storage"
+  destination = "/app/storage"

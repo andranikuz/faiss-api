@@ -12,11 +12,11 @@ services:
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - API_TOKEN=${API_TOKEN}
+      - STORAGE_DIR=/app/storage
     
     volumes:
-      # Persist data and index
-      - ./data:/app/data
-      - ./index:/app/index
+      # Single volume for all persistent data (messages + indexes)
+      - ./storage:/app/storage
     
     restart: unless-stopped
     

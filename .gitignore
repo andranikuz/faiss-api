@@ -131,3 +131,5 @@ data/*
 !data/.gitkeep
 index/123/index.faiss
 /index
+*.faiss
+/storage
